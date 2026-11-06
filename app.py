@@ -65,7 +65,7 @@ def check(value, kind):
         return re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", str(value)) is not None
     elif kind == "isbn":
         digits = str(value).replace("-", "")
-        return digits.isdigit() and len(digits) in (10, 13)
+        return len(digits) in (10, 13) and digits.isdigit()
     elif kind == "date":
         try:
             date.fromisoformat(str(value))
@@ -340,8 +340,9 @@ def create_loan():
     if owed > 0:
         conn.close()
         return jsonify({"error": "member has unpaid fines"}), 409
-    limit = 3
-    if member[3] == "staff":
+    if member[3] == "student":
+        limit = 3
+    else:
         limit = 5
     if open_loans >= limit:
         conn.close()
@@ -386,7 +387,7 @@ def return_book(loan_id):
     if loan is None:
         conn.close()
         return jsonify({"error": "loan not found"}), 404
-    if loan[4] == 1:
+    if loan[4] != 0:
         conn.close()
         return jsonify({"error": "loan already returned"}), 409
 
